@@ -87,4 +87,4 @@ dmypy.json
 # Logs
 *.log
 
-./vscode
+.vscode

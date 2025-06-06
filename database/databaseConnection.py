@@ -3,11 +3,14 @@ from structlog.typing import FilteringBoundLogger
 import structlog
 from typing import Tuple, Dict, Any, Optional
 import os
+import logging
 
 class Connection:
     
     def __init__(self) -> None:
         
+        self.logger = logging.getLogger(__name__)
+                
         self.database_name = os.getenv("DB_NAME", 'default_database.db')
         
         try:
@@ -16,9 +19,9 @@ class Connection:
                 check_same_thread=False
             )
             self.connection.row_factory = sqlite3.Row
-            print(f"Connected to [{self.database_name}] SQLite database ✅")
+            self.logger.debug(f"Connected to [{self.database_name}] SQLite database ✅")
         except sqlite3.Error as e:
-            print(f"Error while connecting to SQLite database: {e}")
+            self.logger.error(f"Error while connecting to SQLite database: {e}")
             exit(0) 
 
         self.cursor = self.connection.cursor()
@@ -55,6 +58,6 @@ class Connection:
         return self.cursor.fetchall()
     
     def closeConnection(self) -> None:
-        print("Closing connection...")
+        self.logger.debug("Closing connection...")
         self.connection.close()
-        print("Closed ✅")
+        self.logger.debug("Closed ✅")

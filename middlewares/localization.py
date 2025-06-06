@@ -4,32 +4,33 @@ from aiogram.types import Message
 from aiogram.utils.i18n import I18n
 from pathlib import Path
 from database.userDatabase import User
+import json 
 
 current_dir = Path(__file__).parent
 locales_path = current_dir.parent / "locales"
 
-i18n = I18n(path=str(locales_path), default_locale="en", domain="messages")
+default_locale = "en"
 
 class LocalizationMiddleware(BaseMiddleware):
     def __init__(self):
         super().__init__()
-        self.i18n = i18n
 
-    async def __call__(
+    async def __call__( #type: ignore
         self,
         handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
         event: Message,
         data: Dict[str, Any]
     ) -> Any:
         
-        user_id = event.from_user.id
+        user_id = event.from_user.id #type: ignore
         self.user = User(user_id)
         
-        user_locale = self.get_user_locale()
+        user_locale = self.get_user_locale() if self.user.isUserInDatabase() else default_locale
         
-        self.i18n.ctx_locale.set(user_locale)    
-        
-        data["localization"] = self.i18n
+        with open(f"{locales_path}/{user_locale}.json") as locale_file:
+            localization = json.load(locale_file)
+            
+        data["localization"] = localization
         return await handler(event, data)
 
     def get_user_locale(self) -> str:

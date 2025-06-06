@@ -1,9 +1,13 @@
 from typing import Optional
 from databaseConnection import connection
+import logging
+
+logger = logging.getLogger(__name__)
 
 tableName = 'users'
 
 def initialization() -> None:
+     
     connection.execute(f"""
             CREATE TABLE IF NOT EXISTS {tableName} (
                 user_id INTEGER PRIMARY KEY,
@@ -13,7 +17,7 @@ def initialization() -> None:
                 isfFirstLogin BOOLEAN DEFAULT 1
             ) """)
 
-    print(f"Table name: {tableName} ::: Initialization completed ✅")
+    logger.debug(f"Table name: {tableName} ::: Initialization completed ✅")
 
 class User:
     def __init__(self, user_id) -> None:
@@ -28,7 +32,7 @@ class User:
         
         params = {
             'user_id' : self.user_id,
-            'language_code' : "uk",
+            'language_code' : "en",
             'subscription' : "free",
             'status' : "member",
             'isfFirstLogin' : True
@@ -37,7 +41,7 @@ class User:
         self.connection.execute(query, params)
         
         if self.isUserFirstLogin():
-            print(f"Table name: {tableName} ::: new user has been created.")
+            logger.debug(f"Table name: {tableName} ::: new user has been created.")
             
             self.connection.execute(
                 query = f"UPDATE {tableName} SET isfFirstLogin = :isfFirstLogin WHERE user_id = :user_id",
